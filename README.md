@@ -1,50 +1,46 @@
 # Objective
 
-The objective of this project is to use the [Yelp dataset](http://www.yelp.com/dataset_challenge) for two problems:
+The [Yelp dataset](http://www.yelp.com/dataset_challenge) contains data on businesses, users, as well as user reviews of businesses. This project builds a simple recommender system for recommending new businesses to users, using data on user ratings and business location, and other characteristics.
 
-1. predict ratings of newly added businesses;
-2. build a simple recommender system to recommend new businesses to users.
-
-The dataset contains data on businesses, reviews and users.
-
-## Predict ratings of new businesses
-
-We use the following predictors in `src/analysis.py`
-
-* Location-based model: predict based on ratings of nearest neighbors (using `sklean.neighbors.KNeighborsRegressor`)
-* Categories and attributes model: predict based on the similarity of a business' category and attributes to those of existing businesses, using one-hot encoding `src.transformer.One_Hot_Encoder` (see [Custom transformer classes](./README.md#Transformers) below)
-
-## Recommend new businesses to users
-
-We use the following recommenders in `src/recommender.py`
+In `src/recommender.py`, we implement two types of recommender systems
 
 * Content-based filtering
 * Collaborative filtering
 
+
+
 ### Content-based filtering
 
-Recommend new businesses based on the similarity of a business to a user's profile. Businesses are characterized by a feature vector comprising of a `FeatureUnion` of
+Content-based filtering recommends new businesses based on the similarity of a business' characteristics to a user's profile. Each business is characterized by its
 
 * Average review score
-* Location (one-hot encoding of city using `One_Hot_Encoder`)
-* Business categories and attributes (using `One_Hot_Encoder`)
+* Location (city)
+* Category (e.g. restaurant, dentist)
+* Attributes (e.g. non-smoking, accepts credit card)
 
-A user's profile is a weighted average of the features of the businesses she have reviewed, weighted by her rating of the business.
+The city, category and attribute features were represented by one-hot encoding using a custom class `One_Hot_Encoder` in `src/transformers.py`, thereafter the feature vector was formed using `FeatureUnion` in the `sklearn.pipeline` module.
+
+A user's profile is a weighted average of the features of the businesses she reviewed, weighted by her rating of the business.
+Finally, the algorithm recommends the business(es) that are closest in cosine distance to the user's profile.
 
 
 ### Collaborative filtering
 
-Recommend new businesses that appeal to similar users, based on utility matrix of each user's rating of each business, mean-normalized by businesses' average rating. (The utility matrix is represented as a `pandas.Series` of `scipy.sparse` vectors of user ratings for each business.)
-For each business, the vector of user ratings represents the business' appeal.
-The businesses whose appeal are closest (by cosine similarity) to the user's favorite business are recommended to the user.
+Collaborative filtering recommends new businesses that appeal to similar users. Each user's rating of each business is recorded as an entry in a utility matrix.
+For each business, the vector of user ratings represents how much the business appeals to subgroups of users.
+The algorithm recommends the businesses whose vector of user ratings are closest (in cosine similarity) to that of the user's favorite business.
+
+The utility matrix is represented as a `pandas.Series` of `scipy.sparse` vectors of user ratings for each business. Ratings are centered to zero so that each businesses' average rating is zero, and missing values are set to zero.
+
+
+
 
 
 ## Custom Classes
 
-### Transformers
+The module `src/transformers.py` contains two transformer for transforming data.
 
-The data can be transformed using transformers in the module `src/transformers.py`.
-
-* `Column_Select_Transformer(colnames)` selects the specified column(s) given in the list `colnames`.
-* `One_Hot_Encoder(colnames, value_type = 'list', sparse = True)` turns the specified column in `colnames` with values of `value_type` into a `sparse` one-hot encoding. `value_type` must either be `list` or `dict`. The features of the transformed matrix are all distinct entries or keys in `colnames`.
+* `Column_Selector(colnames)` selects the specified column(s) given in the list `colnames`.
+* `One_Hot_Encoder(colnames, value_type = 'list', sparse = True)` turns the specified column in `colnames` with values of `value_type` into a `sparse` one-hot encoding. `value_type` must either be `list` or `dict`. The features of the transformed matrix are all distinct entries or keys in `colnames`. <br />
+Dependencies: `sklearn.feature_extraction.DictVectorizer`.
 

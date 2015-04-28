@@ -1,6 +1,6 @@
 '''
 Transformers for the Yelp data.
-* Column_Select_Transformer(colname)
+* Column_Selector(colname)
 * One_Hot_Encoder(colname, value_type, sparse = True)
 ----------
 AUTHOR: CHIA YING LEE
@@ -13,19 +13,11 @@ import pandas as pd
 from sklearn import base
 from sklearn.feature_extraction import DictVectorizer # for One_Hot_Encoder
 
-'''
-# Template for transforming data
-class Transformer(base.BaseEstimator, base.TransformerMixin):
-    def __init__(self):
-        #initialize
 
-    def fit(self, X, y = None):
-        return self
 
-    def transform(self, X):
-        return X # transform data
-'''
-
+''' ----------------
+Functions used in One_Hot_Encoder
+----------------- '''
 def Value_To_Dict(val):
     return {val:1}
 
@@ -42,6 +34,7 @@ def Flatten_Dict(d, prekey = ''):
         elif isinstance(d[key], dict):
             flat_dict.update(Flatten_Dict(d[key], prekey=prekey+'_'+key))
     return flat_dict
+
 
 ''' -------------------
 Converts a feature column values into a One-Hot Encoding matrix. If
@@ -72,12 +65,16 @@ class One_Hot_Encoder(base.BaseEstimator, base.TransformerMixin):
         return self.dv_.transform(X[self.colnames_].apply(self.apply_function_))
 
 
+
+
+
+
 ''' -------------------
 Selects and returns the specified column(s)
 Inputs: colnames is a list of column(s) to select
 Dependencies: sklearn.base
 ------------------- '''
-class Column_Select_Transformer(base.BaseEstimator, base.TransformerMixin):
+class Column_Selector(base.BaseEstimator, base.TransformerMixin):
     def __init__(self, colnames):
         self.colnames_ = colnames
 

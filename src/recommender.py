@@ -39,7 +39,7 @@ print '** Initializing feature extraction for user ' + user
 OHE_cat = transformers.One_Hot_Encoder('categories', 'list', sparse=False)
 OHE_attr= transformers.One_Hot_Encoder('attributes', 'dict', sparse=False)
 OHE_city= transformers.One_Hot_Encoder('city', 'value', sparse=False)
-rating = transformers.Column_Select_Transformer(['stars'])
+rating = transformers.Column_Selector(['stars'])
 OHE_union = FeatureUnion([ ('cat', OHE_cat), ('attr', OHE_attr), ('city', OHE_city), ('rating', rating) ])
 OHE_union.fit(df_business)
 print 'Done'
